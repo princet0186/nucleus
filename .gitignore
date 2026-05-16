@@ -1,0 +1,24 @@
+# Virtual Environment
+venv/
+
+# Environment secrets
+.env
+
+# Database files
+data/db/*.db
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# OS files
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+
+# Ignore project proposals and workspace checks
+*Proposal*.md
+WORKSPACE_CHECK.md

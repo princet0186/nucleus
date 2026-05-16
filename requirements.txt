@@ -1,0 +1,17 @@
+fastapi
+uvicorn
+pydantic-settings
+python-dotenv
+onnxruntime
+transformers
+torch
+opacus
+dp-accounting
+cryptography
+faiss-cpu
+sentence-transformers
+faster-whisper
+python-multipart
+python-socketio
+zeroconf
+sqlalchemy
