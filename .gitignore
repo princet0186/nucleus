@@ -1,23 +1,50 @@
 # Virtual Environment
 venv/
+.venv/
+env/
 
 # Environment secrets
 .env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
-# Database files
+# Database & Encrypted Logs
 data/db/*.db
+data/db/*.enc
+*.db
+*.enc
+*.sqlite
+*.sqlite3
 
-# Python cache
+# Node & Frontend Build
+frontend/node_modules/
+frontend/dist/
+frontend/dist-ssr/
+*.local
+
+# Python cache & compiled code
 __pycache__/
 *.pyc
 *.pyo
+*.pyd
+.pytest_cache/
+.coverage
+htmlcov/
 
 # OS files
 .DS_Store
+Thumbs.db
 
-# IDE
+# IDE & Editor configurations
 .vscode/
 .idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
 
 # Ignore project proposals and workspace checks
 *Proposal*.md

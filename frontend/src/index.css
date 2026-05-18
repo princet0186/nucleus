@@ -1,0 +1,263 @@
+/* ============================================================
+   NUCLEUS DESIGN SYSTEM
+   Inspired by modern AI Studios — Dark, Sleek, Professional
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+/* === CSS Reset === */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* === Design Tokens === */
+:root {
+  /* Background layers */
+  --bg-deep: #0e0e0e;
+  --bg-base: #131314;
+  --bg-surface: #1e1f20;
+  --bg-elevated: #282a2c;
+  --bg-hover: #2d2f31;
+
+  /* Borders */
+  --border-subtle: rgba(255, 255, 255, 0.05);
+  --border-default: rgba(255, 255, 255, 0.1);
+  --border-focus: rgba(138, 180, 248, 0.5);
+
+  /* Text */
+  --text-primary: #e3e3e3;
+  --text-secondary: #9aa0a6;
+  --text-muted: #80868b;
+  --text-inverse: #131314;
+
+  /* Accent & Status */
+  --accent: #8ab4f8;
+  --accent-muted: rgba(138, 180, 248, 0.15);
+  --accent-solid: #8ab4f8;
+  --accent-text: #131314;
+  
+  --success: #81c995;
+  --warning: #fde293;
+  --danger: #f28b82;
+
+  /* Triage colors */
+  --t1-immediate: #f28b82;
+  --t1-bg: rgba(242, 139, 130, 0.12);
+  --t2-delayed: #fde293;
+  --t2-bg: rgba(253, 226, 147, 0.12);
+  --t3-minimal: #81c995;
+  --t3-bg: rgba(129, 201, 149, 0.12);
+  --t4-expectant: #9aa0a6;
+  --t4-bg: rgba(154, 160, 166, 0.12);
+
+  /* Typography */
+  --font-body: 'Inter', -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* Layout */
+  --sidebar-width: 260px;
+  --header-height: 60px;
+
+  /* Radii */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+
+  /* Shadows */
+  --shadow-glow: 0 0 30px rgba(138, 180, 248, 0.15);
+}
+
+/* === Base Styles === */
+html {
+  font-size: 15px;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg-deep);
+  color: var(--text-primary);
+  line-height: 1.5;
+  min-height: 100vh;
+  overflow: hidden; /* App layout handles scroll */
+}
+
+#root {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  background-color: var(--bg-base);
+}
+
+/* === Typography === */
+h1, h2, h3, h4 {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+h1 { font-size: 1.5rem; letter-spacing: -0.01em; }
+h2 { font-size: 1.25rem; }
+h3 { font-size: 1.1rem; }
+
+p { color: var(--text-secondary); }
+
+/* === Layout Shell === */
+.app-container {
+  display: flex;
+  width: 100%;
+  height: 100%;
+}
+
+.sidebar {
+  width: var(--sidebar-width);
+  height: 100%;
+  background: var(--bg-deep);
+  border-right: 1px solid var(--border-default);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  transition: transform 0.3s ease;
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow-y: auto;
+  background: var(--bg-base);
+  position: relative;
+}
+
+.page-wrapper {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+  flex: 1;
+}
+
+/* === Cards / Glass UI === */
+.card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  transition: all 0.2s ease;
+}
+
+.card:hover {
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+/* === Inputs & Buttons === */
+.input, textarea, select {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: var(--bg-base);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: var(--bg-surface);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.2rem;
+  border-radius: var(--radius-full);
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.btn-primary {
+  background: var(--accent-solid);
+  color: var(--accent-text);
+}
+
+.btn-primary:hover {
+  filter: brightness(1.1);
+  box-shadow: var(--shadow-glow);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-default);
+}
+
+.btn-ghost:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* === Custom Utilities === */
+.mono {
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: var(--radius-full);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.badge-t1 { background: var(--t1-bg); color: var(--t1-immediate); border: 1px solid rgba(242, 139, 130, 0.2); }
+.badge-t2 { background: var(--t2-bg); color: var(--t2-delayed); border: 1px solid rgba(253, 226, 147, 0.2); }
+.badge-t3 { background: var(--t3-bg); color: var(--t3-minimal); border: 1px solid rgba(129, 201, 149, 0.2); }
+.badge-t4 { background: var(--t4-bg); color: var(--t4-expectant); border: 1px solid rgba(154, 160, 166, 0.2); }
+.badge-success { background: rgba(129, 201, 149, 0.1); color: var(--success); border: 1px solid rgba(129, 201, 149, 0.2); }
+
+.spinner {
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--border-default);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.fade-in {
+  animation: fadeIn 0.4s ease-out;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* === Scrollbar === */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-default); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }

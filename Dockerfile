@@ -3,10 +3,10 @@ FROM python:3.13-slim
 # Set working directory
 WORKDIR /app
 
-# Install system dependencies required for ML libraries and compilation
+# Install system dependencies required for compilation and cryptography tools
 RUN apt-get update && apt-get install -y \
     build-essential \
-    ffmpeg \
+    libsqlite3-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements and install Python dependencies
@@ -27,5 +27,5 @@ ENV PORT=8000
 # Expose the API port
 EXPOSE 8000
 
-# Command to run the application
-CMD ["python", "backend/main.py"]
+# Run the FastAPI server using uvicorn
+CMD ["python3", "backend/main.py"]
