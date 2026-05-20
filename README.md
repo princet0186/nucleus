@@ -1,6 +1,10 @@
 # Nucleus 
 
-Welcome to Nucleus AI. This project is a supportive tool designed to assist combat medics in high-stress, offline(hybrid) environments. When medics are working in the field, they often need to make quick decisions about medical care, triage, and drug interactions. Nucleus helps by providing an intelligent assistant that can analyze medical descriptions, suggest treatment protocols, and check for potentially dangerous drug interactions. Importantly, it is built to keep all patient and operational data secure and private, ensuring that sensitive information never leaves the device or gets exposed unnecessarily.
+Welcome to Nucleus AI.
+
+This project is a supportive tool designed to assist combat medics in high-stress, offline(hybrid) environments.
+
+When medical team is working in the field, they often need to make quick decisions about medical care, triage, and drug interactions. Nucleus helps by providing an intelligent assistant that can analyze medical descriptions, suggest treatment protocols, and check for potentially dangerous drug interactions. Importantly, it is built to keep all patient and operational data secure and private, ensuring that sensitive information never leaves the device or gets exposed unnecessarily.
 
 ## Core Features
 
