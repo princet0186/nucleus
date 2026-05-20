@@ -4,7 +4,6 @@ from sqlalchemy.orm import relationship
 from backend.db.session import Base
 from backend.security.key_derivation import get_cipher
 
-# Helper functions for the models
 def encrypt_val(data: str) -> str:
     if not data: return data
     return get_cipher().encrypt(data.encode()).decode()
@@ -22,12 +21,10 @@ class CasualtyCard(Base):
     id = Column(Integer, primary_key=True, index=True)
     patient_id = Column(String, unique=True, index=True, nullable=False)
     
-    # We store the encrypted string in the database columns
     _full_name = Column("full_name", String)
     _unit = Column("unit", String)
     _injury_type = Column("injury_type", String)
     
-    # Triage category is kept plaintext so we can easily filter/sort by it (T1, T2, etc.)
     triage_category = Column(String) 
     
     created_at = Column(DateTime(timezone=True), server_default=func.now())
@@ -35,7 +32,6 @@ class CasualtyCard(Base):
     # Relationship to the logs
     logs = relationship("TriageLog", back_populates="casualty")
 
-    # --- Python Properties for Auto-Encryption ---
     
     @property
     def full_name(self):

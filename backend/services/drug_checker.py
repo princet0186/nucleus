@@ -1,10 +1,4 @@
-"""
-Battlefield Drug Formulary & Interaction Checker.
-Based on the TCCC Tactical Combat Casualty Care Guidelines.
-
-Combat medics carry a limited set of medications. This module checks
-for dangerous interactions BEFORE the medic administers a drug.
-"""
+# Battlefield Drug Formulary & Interaction Checker.
 
 # The drugs a combat medic actually carries in their aid bag
 BATTLEFIELD_FORMULARY = {
@@ -116,12 +110,7 @@ INTERACTION_RULES = [
 
 
 def check_interactions(drugs_to_administer: list[str], drugs_already_given: list[str] = None) -> list[dict]:
-    """
-    Checks a list of drugs against each other and against previously administered drugs
-    for known dangerous interactions.
-    
-    Returns a list of warnings (empty list = safe to proceed).
-    """
+    # Checks a list of drugs against each other and against previously administered drugs for dangerous interactions.
     if drugs_already_given is None:
         drugs_already_given = []
     
@@ -149,10 +138,10 @@ def check_interactions(drugs_to_administer: list[str], drugs_already_given: list
 
 
 def get_drug_info(drug_key: str) -> dict | None:
-    """Returns formulary information for a given drug."""
+    # Returns formulary information for a given drug.
     return BATTLEFIELD_FORMULARY.get(drug_key)
 
 
 def get_all_drugs() -> list[str]:
-    """Returns all available drug keys in the formulary."""
+    # Returns all available drug keys in the formulary.
     return list(BATTLEFIELD_FORMULARY.keys())

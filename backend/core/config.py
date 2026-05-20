@@ -7,22 +7,17 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "Nucleus"
     VERSION: str = "2.0.0"
 
-    # Paths
     BASE_DIR: Path = Path(__file__).resolve().parent.parent
     DATA_DIR: Path = BASE_DIR.parent / "data"
     DB_PATH: str = str(DATA_DIR / "db" / "nucleus.db")
     AUDIT_PATH: str = str(DATA_DIR / "db" / "privacy_audit.enc")
 
-    # Encryption — PBKDF2-derived key protects all local data
     MASTER_KEY: str = "nucleus_super_secret_field_key_2024"
     SALT: bytes = b"tactical_nucleus_salt_v1"
 
-    # Gemini — cloud LLM for medical and military reasoning
     GEMINI_API_KEY: str = ""
     GEMINI_MODEL: str = "gemini-3.0-pro"
 
-    # Differential Privacy — epsilon budget bounds how much
-    # statistical information leaks across all queries combined
     EPSILON_BUDGET: float = 10.0
     EPSILON_PER_QUERY: float = 0.1
 

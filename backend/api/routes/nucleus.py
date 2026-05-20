@@ -15,7 +15,7 @@ router = APIRouter(prefix="/nucleus", tags=["Nucleus AI"])
 
 
 def _build_privacy_metadata(raw: dict) -> PrivacyMetadata:
-    """Extracts the privacy block from the engine response into a typed schema."""
+    # Extracts the privacy block from the engine response into a typed schema.
     p = raw.get("privacy", {})
     return PrivacyMetadata(
         sanitization_applied=p.get("sanitization_applied", False),
@@ -31,11 +31,7 @@ def _build_privacy_metadata(raw: dict) -> PrivacyMetadata:
 
 @router.post("/query", response_model=NucleusQueryResponse)
 async def general_query(request: NucleusQueryRequest):
-    """
-    General-purpose military and tactical AI assistant.
-    Handles questions about operations, logistics, field procedures,
-    survival, and any non-specialized military topic.
-    """
+    # General-purpose military and tactical AI assistant.
     if not nucleus_ai.is_ready:
         raise HTTPException(status_code=503, detail="Nucleus AI not initialized. Set GEMINI_API_KEY.")
 
@@ -55,11 +51,7 @@ async def general_query(request: NucleusQueryRequest):
 
 @router.post("/triage", response_model=TriageResponse)
 async def medical_triage(request: TriageRequest):
-    """
-    Specialized medical triage — classifies combat injuries into
-    NATO T1-T4 categories with TCCC treatment protocols.
-    Returns structured clinical data for field use.
-    """
+
     if not nucleus_ai.is_ready:
         raise HTTPException(status_code=503, detail="Nucleus AI not initialized. Set GEMINI_API_KEY.")
 
@@ -104,10 +96,7 @@ async def medical_triage(request: TriageRequest):
 
 @router.post("/drug-check", response_model=DrugCheckResponse)
 async def drug_interaction_check(request: DrugCheckRequest):
-    """
-    Checks drug interactions using Gemini's pharmacological knowledge.
-    The hardcoded battlefield formulary serves as a validation baseline.
-    """
+    # Checks drug interactions using Gemini's pharmacological knowledge.
     if not nucleus_ai.is_ready:
         raise HTTPException(status_code=503, detail="Nucleus AI not initialized. Set GEMINI_API_KEY.")
 
@@ -151,10 +140,7 @@ async def drug_interaction_check(request: DrugCheckRequest):
 
 @router.post("/medevac", response_model=MedevacResponse)
 async def generate_medevac(request: MedevacRequest):
-    """
-    Generates a NATO-standard 9-Line MEDEVAC request.
-    This is deterministic (no Gemini needed) — the template is correct per TCCC.
-    """
+    # Generates a NATO-standard 9-Line MEDEVAC request.
     result = generate_medevac_request(
         triage_category=request.triage_category,
         grid_coordinate=request.grid_coordinate,
@@ -172,7 +158,6 @@ async def generate_medevac(request: MedevacRequest):
 
 @router.get("/formulary")
 async def get_formulary():
-    """Returns the complete battlefield drug formulary for reference."""
     return {
         "formulary": BATTLEFIELD_FORMULARY,
         "total_drugs": len(BATTLEFIELD_FORMULARY),

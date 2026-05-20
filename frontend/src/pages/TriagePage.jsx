@@ -40,7 +40,9 @@ export default function TriagePage() {
   return (
     <div className="playground-layout fade-in" style={{ display: 'flex', height: '100%', padding: '1.5rem', gap: '1.5rem' }}>
       
-      {/* Left Pane - Input */}
+      {
+        // Left Pane - Input
+      }
       <div className="playground-main" style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1rem' }}>
         <div>
           <h1 style={{ fontSize: '1.4rem', marginBottom: '0.25rem' }}>Playground: Medical Triage</h1>
@@ -80,7 +82,9 @@ export default function TriagePage() {
         )}
       </div>
 
-      {/* Right Pane - Results & Privacy Metadata */}
+      {
+        // Right Pane - Results & Privacy Metadata
+      }
       <div className="playground-sidebar" style={{ width: '360px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
         <h3 style={{ fontSize: '0.9rem', textTransform: 'uppercase', color: 'var(--text-secondary)', letterSpacing: '0.05em' }}>
           Triage Result

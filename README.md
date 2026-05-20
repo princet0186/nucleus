@@ -23,26 +23,6 @@ When operating on contested battlefields, cloud-based LLM queries risk leaking t
 
 ---
 
-## ✦ Technical Architecture
-
-```
-                  ┌────────────────────────────────────────┐
-                  │          Nucleus AI Frontend           │
-                  └───────────────────┬────────────────────┘
-                                      │
-                                      ▼
-                  ┌────────────────────────────────────────┐
-                  │      Privacy Preserving Gateway        │
-                  │  (Sanitizer -> DP Laplace -> ZKP Proof) │
-                  └───────────────────┬────────────────────┘
-                                      ├────────────────────┐
-                                      ▼                    ▼
-                           ┌────────────────────┐ ┌──────────────────┐
-                           │   Gemini 3.0 Pro   │ │ Local SQLite DB  │
-                           │   Cloud Inference  │ │ (AES-Encrypted)  │
-                           └────────────────────┘ └──────────────────┘
-```
-
 ### API Endpoints:
 *   `POST /nucleus/query` — General military operations assistant.
 *   `POST /nucleus/triage` — Structured clinical MASCAL triage classification.

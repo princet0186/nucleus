@@ -1,18 +1,10 @@
-"""
-Pydantic schemas for the Nucleus API.
-
-Defines the shape of every request and response, including
-privacy metadata that accompanies all AI-generated responses.
-"""
 
 from pydantic import BaseModel, Field
 from typing import Optional
 
 
-# === Privacy Metadata (attached to every AI response) ===
 
 class PrivacyMetadata(BaseModel):
-    """Privacy proof attached to every Gemini-powered response."""
     sanitization_applied: bool
     fields_redacted: list[str] = Field(default_factory=list)
     differential_privacy_noise: bool = False
@@ -23,7 +15,6 @@ class PrivacyMetadata(BaseModel):
     zkp_verified: bool = False
 
 
-# === General Query Schemas ===
 
 class NucleusQueryRequest(BaseModel):
     query: str = Field(
@@ -44,7 +35,6 @@ class NucleusQueryResponse(BaseModel):
     privacy: PrivacyMetadata
 
 
-# === Medical Triage Schemas ===
 
 class TriageRequest(BaseModel):
     injury_description: str = Field(
@@ -78,7 +68,6 @@ class TriageResponse(BaseModel):
     privacy: PrivacyMetadata
 
 
-# === Drug Interaction Schemas ===
 
 class DrugCheckRequest(BaseModel):
     drugs_to_administer: list[str] = Field(
@@ -115,7 +104,6 @@ class DrugCheckResponse(BaseModel):
     privacy: PrivacyMetadata
 
 
-# === MEDEVAC Schemas (unchanged — deterministic, no Gemini needed) ===
 
 class MedevacRequest(BaseModel):
     triage_category: str = Field(
@@ -152,7 +140,6 @@ class MedevacResponse(BaseModel):
     radio_format: str
 
 
-# === Casualty Database Schemas ===
 
 class CasualtyCreate(BaseModel):
     patient_id: str = Field(..., description="Unique alphanumeric military designation or generic ID")

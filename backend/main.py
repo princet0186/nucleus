@@ -1,16 +1,3 @@
-"""
-Nucleus — Privacy-Preserving AI for Military Field Operations.
-
-Application entry point. Initializes the Gemini AI engine,
-encrypted database, and registers all API routes.
-
-Architecture:
-  Gemini (cloud LLM) provides military and medical reasoning.
-  Privacy Sanitizer strips PII and applies differential privacy.
-  Zero-Knowledge Proofs verify sanitization without revealing originals.
-  Fernet encryption protects all local data at rest.
-  MEDEVAC generation remains deterministic (no AI needed).
-"""
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -24,7 +11,6 @@ from backend.api.routes.nucleus import router as nucleus_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Startup: init database and Gemini client. Shutdown: log exit."""
     init_db()
     nucleus_ai.initialize()
     yield

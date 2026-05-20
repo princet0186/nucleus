@@ -1,24 +1,3 @@
-"""
-Nucleus AI Engine — Gemini-powered military and medical reasoning.
-
-This is the central intelligence layer. Every query flows through
-a privacy pipeline before reaching Gemini:
-
-    User Input → Privacy Sanitizer (PII strip + DP noise)
-              → Zero-Knowledge Commitment (audit proof)
-              → Encryption Layer (audit log)
-              → Gemini API (zero-retention inference)
-              → Response Validation
-              → Encrypted Cache
-
-The engine operates in two modes:
-  GENERAL  — answers any military/tactical/logistics question
-  MEDICAL  — specialized TCCC triage with structured NATO T1-T4 output
-
-Gemini never trains on the queries. Its zero-data-retention policy
-means ε = 0 for the inference model — strictly stronger than any
-locally fine-tuned model with DP-SGD.
-"""
 
 import json
 import uuid
@@ -111,16 +90,7 @@ In the field, there is no pharmacist to double-check."""
 
 
 class NucleusAI:
-    """
-    The unified AI engine for Nucleus.
 
-    Wraps Gemini with a full privacy pipeline. Every query is:
-    1. Sanitized (PII stripped, DP noise added)
-    2. Committed (ZKP hash commitment for audit)
-    3. Sent to Gemini (de-identified content only)
-    4. Logged (encrypted audit trail)
-    5. Returned with privacy metadata attached
-    """
 
     def __init__(self):
         self._client = None
@@ -128,10 +98,6 @@ class NucleusAI:
         self._initialized = False
 
     def initialize(self) -> None:
-        """
-        Initializes the Gemini client. Called once at server startup.
-        Requires GEMINI_API_KEY to be set in environment.
-        """
         if not settings.GEMINI_API_KEY:
             print("[NUCLEUS AI] WARNING: GEMINI_API_KEY not set. AI features disabled.")
             return
@@ -145,11 +111,6 @@ class NucleusAI:
         return self._initialized and self._client is not None
 
     async def query(self, user_query: str, context: str = None) -> dict:
-        """
-        General-purpose military/tactical query.
-        Handles everything from logistics to field procedures.
-        Medical questions are answered but without structured triage output.
-        """
         return await self._execute(
             user_input=user_query,
             system_prompt=_GENERAL_SYSTEM_PROMPT,
@@ -159,11 +120,6 @@ class NucleusAI:
 
     async def triage(self, injury_description: str,
                      patient_demographics: dict = None) -> dict:
-        """
-        Specialized medical triage — NATO T1-T4 classification.
-        Returns structured triage data with treatment protocols.
-        """
-        # Build the full clinical prompt
         prompt_parts = [injury_description]
         if patient_demographics:
             demo_str = ", ".join(
@@ -180,7 +136,6 @@ class NucleusAI:
             response_mime_type="application/json",
         )
 
-        # Parse structured triage response from Gemini
         if result.get("gemini_response"):
             try:
                 triage_data = json.loads(result["gemini_response"])
@@ -195,13 +150,8 @@ class NucleusAI:
     async def drug_check(self, drugs_to_administer: list[str],
                          drugs_already_given: list[str] = None,
                          patient_context: str = None) -> dict:
-        """
-        Drug interaction analysis combining Gemini reasoning
-        with the hardcoded battlefield formulary as a safety net.
-        """
         drugs_already_given = drugs_already_given or []
 
-        # Build the query for Gemini
         prompt = (
             f"Check interactions for administering: {', '.join(drugs_to_administer)}\n"
             f"Already given: {', '.join(drugs_already_given) if drugs_already_given else 'None'}"
@@ -216,7 +166,6 @@ class NucleusAI:
             response_mime_type="application/json",
         )
 
-        # Parse structured drug check response
         if result.get("gemini_response"):
             try:
                 drug_data = json.loads(result["gemini_response"])
@@ -231,16 +180,6 @@ class NucleusAI:
     async def _execute(self, user_input: str, system_prompt: str,
                        mode: str, context: str = None,
                        response_mime_type: str = None) -> dict:
-        """
-        Core execution pipeline — every query flows through here.
-
-        Steps:
-        1. Sanitize the input (PII stripping + differential privacy)
-        2. Create ZKP commitment (proof of sanitization)
-        3. Call Gemini with sanitized input only
-        4. Log everything to encrypted audit trail
-        5. Return response with privacy metadata
-        """
         query_id = str(uuid.uuid4())
 
         if not self.is_ready:
@@ -250,7 +189,6 @@ class NucleusAI:
                 "mode": mode,
             }
 
-        # Check if privacy budget is exhausted
         if privacy_sanitizer.epsilon_remaining <= 0:
             return {
                 "query_id": query_id,
@@ -260,13 +198,10 @@ class NucleusAI:
                 "epsilon_remaining": 0,
             }
 
-        # --- Step 1: Privacy Sanitization ---
         sanitized_input, sanitization_report = privacy_sanitizer.sanitize(user_input)
 
-        # --- Step 2: Zero-Knowledge Commitment ---
         commitment = zkp.commit(user_input, sanitized_input)
 
-        # --- Step 3: Call Gemini ---
         full_prompt = sanitized_input
         if context:
             sanitized_context, _ = privacy_sanitizer.sanitize(context)
@@ -299,7 +234,6 @@ class NucleusAI:
                 },
             }
 
-        # --- Step 4: Encrypted Audit Log ---
         encryption_layer.log_query(
             query_id=query_id,
             sanitized_query=sanitized_input,
@@ -308,7 +242,6 @@ class NucleusAI:
             zkp_commitment=commitment.commitment,
         )
 
-        # --- Step 5: Build Response ---
         return {
             "query_id": query_id,
             "mode": mode,
@@ -327,5 +260,4 @@ class NucleusAI:
         }
 
 
-# Singleton — initialized in main.py lifespan
 nucleus_ai = NucleusAI()

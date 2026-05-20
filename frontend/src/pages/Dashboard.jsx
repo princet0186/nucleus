@@ -70,7 +70,9 @@ export default function Dashboard() {
             <h3 style={{ marginBottom: '0.5rem', fontWeight: 500 }}>{mod.title}</h3>
             <p style={{ fontSize: '0.9rem', lineHeight: 1.5, color: 'var(--text-secondary)' }}>{mod.description}</p>
             
-            {/* Subtle glow effect on hover */}
+            {
+              // Subtle glow effect on hover
+            }
             <div className="card-glow" />
           </div>
         ))}

@@ -1,24 +1,6 @@
-"""
-9-Line MEDEVAC Request Generator.
-
-Generates a formatted NATO-standard 9-Line MEDEVAC request
-from triage classification and casualty card data.
-
-Standard 9-Line Format:
-  Line 1: Location (MGRS grid coordinate)
-  Line 2: Radio frequency / call sign
-  Line 3: Number of patients by precedence (A-Urgent, B-Priority, C-Routine, D-Convenience, E-Expectant)
-  Line 4: Special equipment required (A-None, B-Hoist, C-Extraction, D-Ventilator)
-  Line 5: Number of patients by type (L-Litter, A-Ambulatory)
-  Line 6: Security of pickup site (N-No enemy, P-Possible, E-Enemy in area, X-Armed escort required)
-  Line 7: Method of marking pickup site (A-Panels, B-Pyro, C-Smoke, D-None, E-Other)
-  Line 8: Patient nationality and status (A-US Military, B-US Civilian, C-Non-US Military, D-Non-US Civilian, E-EPW)
-  Line 9: CBRN contamination (N-None, C-Chemical, B-Biological, R-Radiological, N-Nuclear)
-"""
 
 from datetime import datetime
 
-# Maps our T1-T4 to the 9-Line precedence codes
 TRIAGE_TO_PRECEDENCE = {
     "T1-IMMEDIATE": "A",   # Urgent
     "T2-DELAYED": "B",     # Priority
@@ -48,12 +30,6 @@ def generate_medevac_request(
     special_equipment: str = "A",
     casualty_info: dict = None,
 ) -> dict:
-    """
-    Generates a complete 9-Line MEDEVAC request.
-    
-    Returns both a structured dict and a formatted text block
-    ready for radio transmission.
-    """
     precedence = TRIAGE_TO_PRECEDENCE.get(triage_category, "C")
     patient_type = "L" if is_litter else "A"
     
@@ -69,7 +45,6 @@ def generate_medevac_request(
         "line_9": f"CBRN: {_cbrn_label(cbrn)}",
     }
     
-    # Generate the radio-ready text block
     formatted = _format_for_radio(nine_line, triage_category)
     
     return {
@@ -83,7 +58,6 @@ def generate_medevac_request(
 
 
 def _format_for_radio(nine_line: dict, triage_cat: str) -> str:
-    """Formats the 9-Line into a plain-text block suitable for radio transmission."""
     lines = [
         "═══════════════════════════════════════",
         "         9-LINE MEDEVAC REQUEST         ",

@@ -46,7 +46,9 @@ export default function MedevacPage() {
   return (
     <div className="playground-layout fade-in" style={{ display: 'flex', height: '100%', padding: '1.5rem', gap: '1.5rem' }}>
       
-      {/* Left Pane - Input */}
+      {
+        // Left Pane - Input
+      }
       <div className="playground-main" style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1rem' }}>
         <div>
           <h1 style={{ fontSize: '1.4rem', marginBottom: '0.25rem' }}>MEDEVAC Builder</h1>
@@ -57,7 +59,9 @@ export default function MedevacPage() {
 
         <div className="card" style={{ display: 'flex', flexDirection: 'column', flex: 1, padding: '1.5rem', background: 'var(--bg-deep)', gap: '1rem', overflowY: 'auto' }}>
           
-          {/* Triage Selection */}
+          {
+            // Triage Selection
+          }
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Triage Category</label>
             <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
@@ -141,7 +145,9 @@ export default function MedevacPage() {
         </div>
       </div>
 
-      {/* Right Pane - Results */}
+      {
+        // Right Pane - Results
+      }
       <div className="playground-sidebar" style={{ width: '420px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
         <h3 style={{ fontSize: '0.9rem', textTransform: 'uppercase', color: 'var(--text-secondary)', letterSpacing: '0.05em' }}>
           Generated Output
