@@ -26,6 +26,7 @@ class CasualtyCard(Base):
     _injury_type = Column("injury_type", String)
     
     triage_category = Column(String) 
+    evacuation_role = Column(String, default="Role 1")
     
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     

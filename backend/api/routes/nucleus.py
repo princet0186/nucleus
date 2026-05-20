@@ -1,5 +1,8 @@
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
+from sqlalchemy.orm import Session
+from backend.db.session import get_db
+from backend.db.models import CasualtyCard
 from backend.services.gemini_engine import nucleus_ai
 from backend.services.medevac_generator import generate_medevac_request
 from backend.services.drug_checker import BATTLEFIELD_FORMULARY
@@ -9,6 +12,7 @@ from backend.models.schemas import (
     DrugCheckRequest, DrugCheckResponse, DrugAnalysis,
     MedevacRequest, MedevacResponse,
     PrivacyMetadata,
+    CasualtyCreate, CasualtyResponse, CasualtyUpdate
 )
 
 router = APIRouter(prefix="/nucleus", tags=["Nucleus AI"])
@@ -162,3 +166,46 @@ async def get_formulary():
         "formulary": BATTLEFIELD_FORMULARY,
         "total_drugs": len(BATTLEFIELD_FORMULARY),
     }
+
+@router.post("/casualty/create", response_model=CasualtyResponse)
+def create_casualty(casualty: CasualtyCreate, db: Session = Depends(get_db)):
+    db_casualty = db.query(CasualtyCard).filter(CasualtyCard.patient_id == casualty.patient_id).first()
+    if db_casualty:
+        raise HTTPException(status_code=400, detail="Patient ID already exists")
+    
+    new_casualty = CasualtyCard(
+        patient_id=casualty.patient_id,
+        full_name=casualty.full_name,
+        unit=casualty.unit,
+        injury_type=casualty.injury_type,
+        triage_category=casualty.triage_category,
+        evacuation_role="Role 1"
+    )
+    db.add(new_casualty)
+    db.commit()
+    db.refresh(new_casualty)
+    
+    # We must format the response to handle the properties correctly, since SQLAlchemy models 
+    # with properties need special care if from_attributes has issues with decrypted properties,
+    # but pydantic should handle it. 
+    return new_casualty
+
+@router.get("/casualty", response_model=list[CasualtyResponse])
+def get_all_casualties(db: Session = Depends(get_db)):
+    return db.query(CasualtyCard).all()
+
+@router.put("/casualty/{patient_id}", response_model=CasualtyResponse)
+def update_casualty(patient_id: str, update_data: CasualtyUpdate, db: Session = Depends(get_db)):
+    db_casualty = db.query(CasualtyCard).filter(CasualtyCard.patient_id == patient_id).first()
+    if not db_casualty:
+        raise HTTPException(status_code=404, detail="Casualty not found")
+    
+    if update_data.triage_category is not None:
+        db_casualty.triage_category = update_data.triage_category
+    if update_data.evacuation_role is not None:
+        db_casualty.evacuation_role = update_data.evacuation_role
+        
+    db.commit()
+    db.refresh(db_casualty)
+    return db_casualty
+

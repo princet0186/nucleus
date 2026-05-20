@@ -1,76 +1,74 @@
-# Nucleus AI Studio ✦
+# Nucleus 
 
-**Offline-First Combat Casualty Care & Tactical Intelligence Engine powered by Gemini 3.0 Pro with mathematically provable Anti-Extraction Privacy guarantees.**
+Welcome to Nucleus AI. This project is a supportive tool designed to assist combat medics in high-stress, offline(hybrid) environments. When medics are working in the field, they often need to make quick decisions about medical care, triage, and drug interactions. Nucleus helps by providing an intelligent assistant that can analyze medical descriptions, suggest treatment protocols, and check for potentially dangerous drug interactions. Importantly, it is built to keep all patient and operational data secure and private, ensuring that sensitive information never leaves the device or gets exposed unnecessarily.
 
-Nucleus AI Studio is a next-generation decision-support and tactical operations platform designed for forward-deployed combat medics (Role 1 and Role 2 medical care). Built for offline tactical environments, it delivers advanced medical reasoning, drug interaction checking, and secure patient logging while maintaining strict operational security (OPSEC).
+## Core Features
 
----
+### 1. Medical Assistance Tools
+*   **Triage Assistant**: Medics can enter a description of a casualty's injuries. The system then helps classify the urgency of the injuries (using standard military categories like Immediate or Delayed) and suggests step-by-step treatment protocols.
+*   **Drug Interaction Checker**: Before administering medications, medics can use this tool to see if combining certain drugs (like pain relievers) might be unsafe for the patient's current condition.
+*   **MEDEVAC Request Generator**: A simple tool that automatically formats a standard 9-line medical evacuation request, so the medic can quickly radio for help.
 
-## ✦ Core Capabilities
-
-### 1. Modern AI Studio Playgrounds
-*   **MASCAL Triage Playground**: Input combat casualty trauma reports. Gemini 3.0 Pro analyzes clinical descriptions, classifies injuries into standard NATO precedence categories (`T1-IMMEDIATE`, `T2-DELAYED`, `T3-MINIMAL`, `T4-EXPECTANT`), and outputs step-by-step TCCC treatment protocols.
-*   **Drug Formulary Playground**: Analyze battlefield drug combinations (e.g. Ketamine, Morphine, Fentanyl) against patient context (e.g. hemorrhagic shock) to flag lethal contraindications before administration.
-*   **MEDEVAC Builder**: A deterministic, zero-net-dependency NATO-standard 9-Line evacuation request generator ready for secure radio transmission.
-
-### 2. Zero-Retention On-Device Privacy Gateway
-When operating on contested battlefields, cloud-based LLM queries risk leaking troop movements, rank designations, and operational sizes to adversary intercept networks. Nucleus filters all queries through a multi-layer **Privacy Gateway** *before* they leave the field device:
-1.  **PII Sanitizer**: Scans and strips military ranks, unit call signs, locations, MGRS grid coordinates, and personal identifiers.
-2.  **Differential Privacy**: Perturbs numeric data (e.g. patient age) using local Laplace noise mechanism (calibrated by an epsilon privacy budget $\epsilon$) to prevent tracking of unique individuals.
-3.  **Zero-Knowledge Proofs (ZKP)**: Uses a cryptographic SHA-256 hash-commitment scheme. Medics receive verifiable proof that data was sanitized and processed without exposing the original query content.
-4.  **Automatic DB Encryption**: Patient cards are stored in SQLite using automatic field-level **AES-128-CBC + HMAC-SHA256** (Fernet) encryption. Cryptographic keys are dynamically derived at boot time using **PBKDF2** with 100,000 iterations.
-5.  **DoD 5220.22-M Secure Wipe**: Instant emergency wipe protocol for high-risk capture scenarios.
+### 2. Privacy and Data Security
+Operating in the field means data security is a top priority. Nucleus uses a multi-layered approach to protect sensitive information before any AI processing happens:
+1.  **Removing Personal Identifiers**: The system automatically scans for and removes sensitive details like military ranks, unit names, and specific locations.
+2.  **Adding Privacy Noise**: It slightly alters numerical data (like age) just enough to protect the individual's identity without changing the medical context.
+3.  **Data Verification**: It creates a secure digital receipt (using a hashing method) to prove that the data was safely sanitized before being processed.
+4.  **Local Encryption**: Any patient records saved on the device are fully encrypted so they cannot be read if the device is lost or captured.
+5.  **Emergency Wipe**: A secure wipe function is available to immediately delete all data if necessary.
 
 ---
 
-### API Endpoints:
-*   `POST /nucleus/query` — General military operations assistant.
-*   `POST /nucleus/triage` — Structured clinical MASCAL triage classification.
-*   `POST /nucleus/drug-check` — Pharmacological interaction checker.
-*   `POST /nucleus/medevac` — Deterministic 9-Line generator.
-*   `POST /nucleus/casualties` — Register casualty (PII auto-encrypted).
-*   `GET /nucleus/casualties` — List active casualties (PII decrypted in-memory).
-*   `DELETE /nucleus/casualties/{patient_id}` — Secure discharge and card deletion.
+## API Endpoints
+
+The system provides several straightforward endpoints to handle these tasks:
+*   `POST /nucleus/query` — For general questions.
+*   `POST /nucleus/triage` — To evaluate and classify injuries.
+*   `POST /nucleus/drug-check` — To check for drug interactions.
+*   `POST /nucleus/medevac` — To generate an evacuation request.
+*   `POST /nucleus/casualties` — To securely register a new patient.
+*   `GET /nucleus/casualties` — To view active patients.
+*   `DELETE /nucleus/casualties/{patient_id}` — To securely remove a patient record.
 
 ---
 
-## ✦ Getting Started
+## Getting Started
 
-### 1. Prerequisites
-*   Python 3.12 or 3.13
-*   Node.js (v18+)
+### 1. What You Need
+*   Python (version 3.12 or newer)
+*   Node.js (version 18 or newer)
 
-### 2. Configure Environment variables
-Create a `.env` file in the root directory:
+### 2. Setup
+Create a `.env` file in the main folder and add your keys:
 ```env
-MASTER_KEY="your_secure_pbkdf2_derivation_passphrase"
+MASTER_KEY="your_secure_passphrase"
 GEMINI_API_KEY="your_google_gemini_api_key"
 ```
 
-### 3. Run Locally
+### 3. Running the Project
 
-#### Run the Backend Server:
+**Start the Backend Server:**
 ```bash
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 PYTHONPATH=. python3 backend/main.py
 ```
-*The FastAPI server runs at `http://localhost:8000` with Swagger docs available at `/docs`.*
+*The server will start at `http://localhost:8000` (API documentation is at `/docs`).*
 
-#### Run the Frontend Studio:
+**Start the Frontend Interface:**
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
-*The studio interface runs at `http://localhost:3000`.*
+*The user interface will be available at `http://localhost:3000`.*
 
 ---
 
-## ✦ Docker Deployment
+## Docker Deployment
 
-You can deploy the backend securely as a self-contained container using the optimized Docker configurations:
+If you prefer to run the backend in an isolated container, you can use Docker:
 
 ```bash
 # Build the Docker image

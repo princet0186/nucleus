@@ -155,8 +155,14 @@ class CasualtyResponse(BaseModel):
     unit: str
     injury_type: str
     triage_category: str
+    evacuation_role: str = "Role 1"
     created_at: str
 
     class Config:
         from_attributes = True
+
+
+class CasualtyUpdate(BaseModel):
+    triage_category: Optional[str] = Field(None, description="Updated triage category")
+    evacuation_role: Optional[str] = Field(None, description="Role 1, Role 2, or Role 3")
 
