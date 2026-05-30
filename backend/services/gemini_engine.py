@@ -1,5 +1,5 @@
-
 import json
+import re
 import uuid
 from datetime import datetime, timezone
 
@@ -13,22 +13,19 @@ from backend.services.zero_knowledge import zkp, ZKCommitment
 
 
 # System prompt for general military/tactical queries
-_GENERAL_SYSTEM_PROMPT = """You are Nucleus AI, a tactical assistant deployed on military field devices.
+GENERAL_PROMPT = """You a tactical assistant deployed on military field devices.
 
 Your role:
 - Answer questions about military operations, tactics, logistics, field procedures, and survival.
 - Provide practical, actionable guidance suitable for field conditions.
 - Support combat medics, field officers, and support personnel.
-- Be concise — operators in the field need fast answers, not essays.
+- Be concise — operators in the field need fast and practical answers, not essays.
 
 Constraints:
 - Never fabricate specific unit names, personnel, or classified procedures.
 - If unsure, say so clearly rather than guessing.
 - Prioritize life-safety information above all else.
-- All responses should be usable without internet connectivity once received.
-
-You may also receive medical queries. Handle them with clinical accuracy
-following Tactical Combat Casualty Care (TCCC) guidelines."""
+- All responses should be usable without internet connectivity once received."""
 
 # System prompt for specialized medical triage
 _TRIAGE_SYSTEM_PROMPT = """You are Nucleus AI operating in MEDICAL TRIAGE mode.
@@ -61,34 +58,6 @@ For every injury description, you MUST respond with this exact JSON structure:
 
 Be clinically precise. Lives depend on accurate triage."""
 
-# System prompt for drug interaction analysis
-_DRUG_CHECK_SYSTEM_PROMPT = """You are Nucleus AI operating in DRUG INTERACTION ANALYSIS mode.
-
-You are assisting a combat medic in checking drug interactions before
-administering medications to a battlefield casualty.
-
-The standard battlefield formulary includes:
-- Tranexamic Acid (TXA), Ketamine, Morphine, Meloxicam, Acetaminophen,
-  Ertapenem, Moxifloxacin, Naloxone, Ondansetron, Epinephrine
-
-For every drug interaction query, respond with this exact JSON structure:
-{
-  "safe_to_administer": true/false,
-  "interactions": [
-    {
-      "drug_pair": "Drug A + Drug B",
-      "severity": "HIGH | MODERATE | LOW",
-      "warning": "Clinical explanation of the interaction",
-      "recommendation": "What to do instead"
-    }
-  ],
-  "overall_recommendation": "Summary recommendation for the medic"
-}
-
-Be conservative — flag potential interactions even if they are moderate.
-In the field, there is no pharmacist to double-check."""
-
-
 class NucleusAI:
 
 
@@ -113,7 +82,7 @@ class NucleusAI:
     async def query(self, user_query: str, context: str = None) -> dict:
         return await self._execute(
             user_input=user_query,
-            system_prompt=_GENERAL_SYSTEM_PROMPT,
+            system_prompt=GENERAL_PROMPT,
             mode="general",
             context=context,
         )
@@ -147,36 +116,6 @@ class NucleusAI:
 
         return result
 
-    async def drug_check(self, drugs_to_administer: list[str],
-                         drugs_already_given: list[str] = None,
-                         patient_context: str = None) -> dict:
-        drugs_already_given = drugs_already_given or []
-
-        prompt = (
-            f"Check interactions for administering: {', '.join(drugs_to_administer)}\n"
-            f"Already given: {', '.join(drugs_already_given) if drugs_already_given else 'None'}"
-        )
-        if patient_context:
-            prompt += f"\nPatient context: {patient_context}"
-
-        result = await self._execute(
-            user_input=prompt,
-            system_prompt=_DRUG_CHECK_SYSTEM_PROMPT,
-            mode="drug_check",
-            response_mime_type="application/json",
-        )
-
-        if result.get("gemini_response"):
-            try:
-                drug_data = json.loads(result["gemini_response"])
-                result["drug_analysis"] = drug_data
-            except json.JSONDecodeError:
-                result["drug_analysis"] = {
-                    "raw_response": result["gemini_response"]
-                }
-
-        return result
-
     async def _execute(self, user_input: str, system_prompt: str,
                        mode: str, context: str = None,
                        response_mime_type: str = None) -> dict:
@@ -198,9 +137,61 @@ class NucleusAI:
                 "epsilon_remaining": 0,
             }
 
+        # Step 1: Pre-execution Data Sanitization (Minimization + Generalization)
         sanitized_input, sanitization_report = privacy_sanitizer.sanitize(user_input)
 
+        # Content Policy Check
+        classified_pattern = re.compile(
+            r"\b(classified|secret|top\s*secret|confidential|noforn|f-22 payload|icbm coordinates)\b",
+            re.IGNORECASE
+        )
+        if classified_pattern.search(sanitized_input):
+            return {
+                "query_id": query_id,
+                "error": "Security policy violation: classified or unauthorized operational markers detected.",
+                "mode": mode,
+                "privacy": {
+                    "sanitization_applied": True,
+                    "fields_redacted": sanitization_report.fields_redacted,
+                    "fields_generalized": sanitization_report.fields_generalized,
+                    "differential_privacy_noise": sanitization_report.noise_applied,
+                    "epsilon_spent": 0.0,
+                    "epsilon_remaining": privacy_sanitizer.epsilon_remaining,
+                }
+            }
+
+        # Step 2: Zero Knowledge Commitment for Audit
         commitment = zkp.commit(user_input, sanitized_input)
+
+        # Step 3: Local Encrypted Response Cache Lookup (with Fuzzy Query Normalization)
+        normalized_query = privacy_sanitizer.normalize_for_cache(sanitized_input)
+        cached_entry = encryption_layer.get_cached_response(normalized_query)
+        if cached_entry:
+            return {
+                "query_id": query_id,
+                "mode": mode,
+                "gemini_response": cached_entry["response"],
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "cached": True,
+                "privacy": {
+                    "sanitization_applied": True,
+                    "fields_redacted": sanitization_report.fields_redacted,
+                    "fields_generalized": sanitization_report.fields_generalized,
+                    "differential_privacy_noise": sanitization_report.noise_applied,
+                    "epsilon_spent": 0.0, # Zero DP budget spent on cache hits
+                    "epsilon_remaining": privacy_sanitizer.epsilon_remaining,
+                    "zkp_commitment": commitment.commitment,
+                    "zkp_proof": commitment.proof,
+                    "zkp_verified": zkp.verify(commitment),
+                    "response_scrubbed": True,
+                    "response_fields_scrubbed": [],
+                },
+            }
+
+        # Step 4: Metadata Sanitization - Timing Pattern Jitter (50-200ms)
+        import asyncio
+        import random
+        await asyncio.sleep(random.uniform(0.05, 0.20))
 
         full_prompt = sanitized_input
         if context:
@@ -208,15 +199,19 @@ class NucleusAI:
             full_prompt = f"Context: {sanitized_context}\n\nQuery: {sanitized_input}"
 
         try:
+            # Bandwidth/Latency Tuning: Choose Gemini Flash for general queries, Pro for specialized triage
+            target_model = settings.GEMINI_FLASH_MODEL if mode == "general" else self._model
+            
             config = types.GenerateContentConfig(
                 system_instruction=system_prompt,
                 temperature=0.2 if mode == "triage" else 0.4,
+                max_output_tokens=500 if mode == "general" else None,
             )
             if response_mime_type:
                 config.response_mime_type = response_mime_type
 
             response = await self._client.aio.models.generate_content(
-                model=self._model,
+                model=target_model,
                 contents=full_prompt,
                 config=config,
             )
@@ -230,14 +225,22 @@ class NucleusAI:
                 "privacy": {
                     "sanitization_applied": True,
                     "fields_redacted": sanitization_report.fields_redacted,
+                    "fields_generalized": sanitization_report.fields_generalized,
                     "epsilon_spent": sanitization_report.epsilon_spent,
+                    "epsilon_remaining": privacy_sanitizer.epsilon_remaining,
                 },
             }
+
+        # Step 5: Post-Execution Response Scrubbing
+        scrubbed_response, response_fields_scrubbed = privacy_sanitizer.sanitize_response(gemini_response)
+
+        # Store to cache
+        encryption_layer.set_cached_response(normalized_query, scrubbed_response, mode)
 
         encryption_layer.log_query(
             query_id=query_id,
             sanitized_query=sanitized_input,
-            response_summary=gemini_response[:200],
+            response_summary=scrubbed_response[:200],
             epsilon_spent=sanitization_report.epsilon_spent,
             zkp_commitment=commitment.commitment,
         )
@@ -245,17 +248,21 @@ class NucleusAI:
         return {
             "query_id": query_id,
             "mode": mode,
-            "gemini_response": gemini_response,
+            "gemini_response": scrubbed_response,
             "timestamp": datetime.now(timezone.utc).isoformat(),
+            "cached": False,
             "privacy": {
                 "sanitization_applied": True,
                 "fields_redacted": sanitization_report.fields_redacted,
+                "fields_generalized": sanitization_report.fields_generalized,
                 "differential_privacy_noise": sanitization_report.noise_applied,
                 "epsilon_spent": sanitization_report.epsilon_spent,
                 "epsilon_remaining": privacy_sanitizer.epsilon_remaining,
                 "zkp_commitment": commitment.commitment,
                 "zkp_proof": commitment.proof,
                 "zkp_verified": zkp.verify(commitment),
+                "response_scrubbed": len(response_fields_scrubbed) > 0,
+                "response_fields_scrubbed": response_fields_scrubbed,
             },
         }
 

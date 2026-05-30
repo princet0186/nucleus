@@ -4,6 +4,7 @@ import math
 import random
 import hashlib
 from dataclasses import dataclass, field
+from typing import Optional
 
 from backend.core.config import settings
 
@@ -22,20 +23,31 @@ _RANKS = [
     r"\bJemadar\b", r"\bRisaldar\b",
 ]
 
-_PII_PATTERNS = [
-    (re.compile(r"\b\d{1,2}[A-Z]{3}\d{6,10}\b"), "[GRID_REDACTED]"),
-    (re.compile(r"-?\d{1,3}\.\d{3,}\s*,\s*-?\d{1,3}\.\d{3,}"), "[COORDS_REDACTED]"),
+# Generalization patterns: replace PII with context-preserving generic labels
+# instead of [REDACTED] which breaks Gemini's ability to reason
+_GENERALIZATION_PATTERNS = [
+    (re.compile(r"\b\d{1,2}[A-Z]{3}\d{6,10}\b"), "a designated grid location"),
+    (re.compile(r"-?\d{1,3}\.\d{3,}\s*,\s*-?\d{1,3}\.\d{3,}"), "a field position"),
     (re.compile(r"\b(ALPHA|BRAVO|CHARLIE|DELTA|ECHO|FOXTROT|GOLF|HOTEL|"
                 r"INDIA|JULIET|KILO|LIMA|MIKE|NOVEMBER|OSCAR|PAPA|QUEBEC|"
                 r"ROMEO|SIERRA|TANGO|UNIFORM|VICTOR|WHISKEY|XRAY|YANKEE|"
                 r"ZULU)[-\s]?\d*[-\s]?(ACTUAL|SIX|MAIN|TAC)?\b",
-                re.IGNORECASE), "[CALLSIGN_REDACTED]"),
-    (re.compile(r"\b\d{2,3}\.\d{1,3}\s*[MmKk]?[Hh][Zz]\b"), "[FREQ_REDACTED]"),
+                re.IGNORECASE), "a tactical element"),
+    (re.compile(r"\b\d{2,3}\.\d{1,3}\s*[MmKk]?[Hh][Zz]\b"), "a radio channel"),
     (re.compile(r"\b\d{1,3}(st|nd|rd|th)\s+(Battalion|Brigade|Division|Regiment|"
-                r"Platoon|Squad|Company|Troop)\b", re.IGNORECASE), "[UNIT_REDACTED]"),
-    (re.compile(r"\b[A-Z]?\d{6,}\b"), "[ID_REDACTED]"),
+                r"Platoon|Squad|Company|Troop)\b", re.IGNORECASE), "a military unit"),
+    (re.compile(r"\b[A-Z]?\d{6,}\b"), "a service member"),
     (re.compile(r"\b(Mr|Mrs|Ms|Dr|Pvt|Sgt|Lt|Cpl|Col|Gen|Maj)\.\s+[A-Z][a-z]+\b"),
-     "[NAME_REDACTED]"),
+     "a personnel member"),
+]
+
+# Patterns to scrub from Gemini RESPONSES (hallucinated OPSEC data)
+_RESPONSE_SCRUB_PATTERNS = [
+    (re.compile(r"\b\d{1,2}[A-Z]{3}\d{6,10}\b"), "[grid reference]"),
+    (re.compile(r"-?\d{1,3}\.\d{3,}\s*,\s*-?\d{1,3}\.\d{3,}"), "[coordinates]"),
+    (re.compile(r"\b\d{2,3}\.\d{1,3}\s*[MmKk]?[Hh][Zz]\b"), "[frequency]"),
+    (re.compile(r"\b\d{1,3}(st|nd|rd|th)\s+(Battalion|Brigade|Division|Regiment|"
+                r"Platoon|Squad|Company|Troop)\b", re.IGNORECASE), "[unit]"),
 ]
 
 
@@ -44,6 +56,7 @@ class SanitizationReport:
     original_hash: str
     sanitized_hash: str
     fields_redacted: list[str] = field(default_factory=list)
+    fields_generalized: list[str] = field(default_factory=list)
     noise_applied: bool = False
     epsilon_spent: float = 0.0
 
@@ -71,18 +84,21 @@ class PrivacySanitizer:
     def sanitize(self, text: str) -> tuple[str, SanitizationReport]:
         original_hash = hashlib.sha256(text.encode()).hexdigest()
         redacted_fields = []
+        generalized_fields = []
 
+        # Step 1: Strip military ranks (remove entirely)
         for rank_pattern in _RANKS:
             if re.search(rank_pattern, text, re.IGNORECASE):
                 text = re.sub(rank_pattern, "", text, flags=re.IGNORECASE)
                 redacted_fields.append("rank")
 
-        for pattern, replacement in _PII_PATTERNS:
+        # Step 2: Generalize PII (context-preserving replacement)
+        for pattern, replacement in _GENERALIZATION_PATTERNS:
             if pattern.search(text):
-                field_name = replacement.strip("[]").lower()
-                redacted_fields.append(field_name)
+                generalized_fields.append(replacement)
                 text = pattern.sub(replacement, text)
 
+        # Step 3: Apply Laplace noise to remaining numeric values
         text, noise_applied = self._apply_laplace_noise(text)
 
         text = re.sub(r"\s{2,}", " ", text).strip()
@@ -97,11 +113,21 @@ class PrivacySanitizer:
             original_hash=original_hash,
             sanitized_hash=sanitized_hash,
             fields_redacted=list(set(redacted_fields)),
+            fields_generalized=list(set(generalized_fields)),
             noise_applied=noise_applied,
             epsilon_spent=epsilon_spent,
         )
 
         return text, report
+
+    def sanitize_response(self, text: str) -> tuple[str, list[str]]:
+        """Scrub Gemini's response for hallucinated OPSEC data."""
+        scrubbed_fields = []
+        for pattern, replacement in _RESPONSE_SCRUB_PATTERNS:
+            if pattern.search(text):
+                scrubbed_fields.append(replacement.strip("[]"))
+                text = pattern.sub(replacement, text)
+        return text, scrubbed_fields
 
     def _apply_laplace_noise(self, text: str) -> tuple[str, bool]:
         noise_added = False
@@ -125,6 +151,17 @@ class PrivacySanitizer:
         u = random.random() - 0.5
         sign = 1 if u >= 0 else -1
         return -scale * sign * math.log(1 - 2 * abs(u))
+
+    @staticmethod
+    def normalize_for_cache(text: str) -> str:
+        """Normalize query for cache key: lowercase, strip stopwords, sort tokens."""
+        stopwords = {"the", "a", "an", "is", "are", "was", "were", "do", "does",
+                     "in", "on", "at", "to", "for", "of", "and", "or", "but",
+                     "how", "what", "when", "where", "which", "who", "that",
+                     "this", "it", "i", "my", "me", "we", "our", "can", "you"}
+        tokens = re.sub(r"[^\w\s]", "", text.lower()).split()
+        filtered = sorted(set(t for t in tokens if t not in stopwords and len(t) > 1))
+        return " ".join(filtered)
 
 
 privacy_sanitizer = PrivacySanitizer()

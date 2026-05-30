@@ -1,4 +1,5 @@
 
+
 from pydantic import BaseModel, Field
 from typing import Optional
 
@@ -7,12 +8,15 @@ from typing import Optional
 class PrivacyMetadata(BaseModel):
     sanitization_applied: bool
     fields_redacted: list[str] = Field(default_factory=list)
+    fields_generalized: list[str] = Field(default_factory=list)
     differential_privacy_noise: bool = False
     epsilon_spent: float = 0.0
     epsilon_remaining: float = 0.0
     zkp_commitment: str = ""
     zkp_proof: str = ""
     zkp_verified: bool = False
+    response_scrubbed: bool = False
+    response_fields_scrubbed: list[str] = Field(default_factory=list)
 
 
 
@@ -32,6 +36,7 @@ class NucleusQueryResponse(BaseModel):
     mode: str
     response: str
     timestamp: str
+    cached: bool = False
     privacy: PrivacyMetadata
 
 

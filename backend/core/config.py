@@ -17,6 +17,7 @@ class Settings(BaseSettings):
 
     GEMINI_API_KEY: str = ""
     GEMINI_MODEL: str = "gemini-3.0-pro"
+    GEMINI_FLASH_MODEL: str = "gemini-2.0-flash"
 
     EPSILON_BUDGET: float = 10.0
     EPSILON_PER_QUERY: float = 0.1

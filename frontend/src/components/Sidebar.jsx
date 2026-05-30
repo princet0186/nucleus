@@ -14,6 +14,7 @@ export default function Sidebar() {
 
   const navItems = [
     { to: '/', label: 'Dashboard', icon: '◱' },
+    { to: '/query', label: 'Tactical Query', icon: '✦' },
     { to: '/tracker', label: 'Patient Tracker', icon: '📋' },
     { to: '/triage', label: 'Playground: Triage', icon: '✛' },
     { to: '/drugs', label: 'Playground: Drugs', icon: '⚕' },
