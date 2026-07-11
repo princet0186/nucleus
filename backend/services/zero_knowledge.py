@@ -1,39 +1,24 @@
-
-import hashlib
 import os
 import json
 from dataclasses import dataclass
+from backend.security.key_derivation import hash_sha256
 
 
 @dataclass
 class ZKCommitment:
-    commitment: str        
-    nonce: str             
-    sanitized_hash: str    
-    proof: str             
+    commitment: str
+    nonce: str
+    sanitized_hash: str
+    proof: str
 
 
 class ZeroKnowledgeProver:
-
     @staticmethod
     def commit(original_query: str, sanitized_query: str) -> ZKCommitment:
-        # Generate a random 32-byte nonce
         nonce = os.urandom(32).hex()
-
-        commitment = hashlib.sha256(
-            (original_query + nonce).encode()
-        ).hexdigest()
-
-        # Hash of the sanitized output (this is what was actually sent)
-        sanitized_hash = hashlib.sha256(
-            sanitized_query.encode()
-        ).hexdigest()
-
-        # Proof: ties the commitment to the sanitized output
-        proof = hashlib.sha256(
-            (commitment + sanitized_hash + nonce).encode()
-        ).hexdigest()
-
+        commitment = hash_sha256(original_query + nonce)
+        sanitized_hash = hash_sha256(sanitized_query)
+        proof = hash_sha256(commitment + sanitized_hash + nonce)
         return ZKCommitment(
             commitment=commitment,
             nonce=nonce,
@@ -43,18 +28,14 @@ class ZeroKnowledgeProver:
 
     @staticmethod
     def verify(commitment: ZKCommitment) -> bool:
-        expected_proof = hashlib.sha256(
-            (commitment.commitment + commitment.sanitized_hash
-             + commitment.nonce).encode()
-        ).hexdigest()
+        expected_proof = hash_sha256(
+            commitment.commitment + commitment.sanitized_hash + commitment.nonce
+        )
         return expected_proof == commitment.proof
 
     @staticmethod
-    def verify_from_original(original_query: str,
-                             commitment: ZKCommitment) -> bool:
-        expected_commitment = hashlib.sha256(
-            (original_query + commitment.nonce).encode()
-        ).hexdigest()
+    def verify_from_original(original_query: str, commitment: ZKCommitment) -> bool:
+        expected_commitment = hash_sha256(original_query + commitment.nonce)
         return expected_commitment == commitment.commitment
 
     @staticmethod
@@ -74,7 +55,6 @@ class ZeroKnowledgeProver:
             sanitized_hash=data["sanitized_hash"],
             proof=data["proof"],
         )
-
 
 
 zkp = ZeroKnowledgeProver()
