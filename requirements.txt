@@ -6,3 +6,8 @@ google-genai
 cryptography
 python-multipart
 sqlalchemy
+# MGRS <-> WGS84 for the offline maps layer. Vector tiles and the facility
+# R*Tree need nothing else: MBTiles and the POI index are both plain SQLite,
+# which the standard library already reads.
+mgrs
+

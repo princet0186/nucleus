@@ -1,15 +1,20 @@
-
-
 from pydantic import BaseModel, Field
 from typing import Optional
 
+from backend.models.common import SanitizationMetadata
+from backend.models.map_schemas import MapPayload
+
+__all__ = ["SanitizationMetadata"]  # re-exported: existing imports expect it here
 
 
 class PrivacyMetadata(BaseModel):
     sanitization_applied: bool
+    dp_mechanism: str = ""
     fields_redacted: list[str] = Field(default_factory=list)
     fields_generalized: list[str] = Field(default_factory=list)
-    differential_privacy_noise: bool = False
+    pate_aggregation: bool = False
+    pate_consensus: float = 0.0
+    pate_teachers_voted: int = 0
     epsilon_spent: float = 0.0
     epsilon_remaining: float = 0.0
     zkp_commitment: str = ""
@@ -19,17 +24,26 @@ class PrivacyMetadata(BaseModel):
     response_fields_scrubbed: list[str] = Field(default_factory=list)
 
 
-
 class NucleusQueryRequest(BaseModel):
     query: str = Field(
-        ..., min_length=3,
+        ...,
+        min_length=3,
         description="Any military, tactical, medical, or logistics question",
-        examples=["What is the correct procedure for a field tracheotomy?"]
+        examples=["What is the correct procedure for a field tracheotomy?"],
     )
     context: Optional[str] = Field(
-        default=None,
-        description="Additional context for the query"
+        default=None, description="Additional context for the query"
     )
+    origin: Optional[str] = Field(
+        default=None,
+        description=(
+            "Operator position as an MGRS grid or 'lat,lon'. Only used when the "
+            "question needs a map ('nearest hospital'). Resolved on-device — a "
+            "position is never sent to the cloud."
+        ),
+        examples=["42S WD 1234 5678"],
+    )
+
 
 class NucleusQueryResponse(BaseModel):
     query_id: str
@@ -37,25 +51,39 @@ class NucleusQueryResponse(BaseModel):
     response: str
     timestamp: str
     cached: bool = False
-    privacy: PrivacyMetadata
-
+    sanitization: Optional[SanitizationMetadata] = None
+    # Present only when the question needed a map ("nearest evacuation centre").
+    # Its presence is the frontend's signal to open the map sidebar.
+    map: Optional[MapPayload] = None
+    # DP layer stays parked — populated only if aggregate reporting ships later.
+    privacy: Optional[PrivacyMetadata] = None
 
 
 class TriageRequest(BaseModel):
     injury_description: str = Field(
-        ..., min_length=5,
+        ...,
+        min_length=5,
         description="Clinical description of the combat injury",
-        examples=["GSW to left chest, difficulty breathing, decreased breath sounds"]
+        examples=["GSW to left chest, difficulty breathing, decreased breath sounds"],
     )
     patient_demographics: Optional[dict] = Field(
         default=None,
-        description="Optional: age, sex, weight — will be sanitized before API call"
+        description="Optional: age, sex, weight — will be sanitized before API call",
     )
+    origin: Optional[str] = Field(
+        default=None,
+        description=(
+            "Operator's position (MGRS grid or 'lat, lon'). Stays on-device; used "
+            "only if Gemini decides a map of nearby facilities would help."
+        ),
+    )
+
 
 class TreatmentProtocol(BaseModel):
     priority: str = ""
     immediate_actions: list[str] = Field(default_factory=list)
     evacuation: str = ""
+
 
 class TriageResult(BaseModel):
     triage_category: str = ""
@@ -64,66 +92,42 @@ class TriageResult(BaseModel):
     recommended_drugs: list[str] = Field(default_factory=list)
     warnings: list[str] = Field(default_factory=list)
 
+
 class TriageResponse(BaseModel):
     query_id: str
     mode: str = "triage"
     triage_result: Optional[TriageResult] = None
     raw_response: Optional[str] = None
     timestamp: str
-    privacy: PrivacyMetadata
-
-
-
-class DrugCheckRequest(BaseModel):
-    drugs_to_administer: list[str] = Field(
-        ...,
-        description="Drug names to check before administering",
-        examples=[["morphine", "ketamine"]]
-    )
-    drugs_already_given: list[str] = Field(
-        default_factory=list,
-        description="Drugs the patient has already received"
-    )
-    patient_context: Optional[str] = Field(
-        default=None,
-        description="Injury context for smarter interaction analysis"
-    )
-
-class DrugInteraction(BaseModel):
-    drug_pair: str = ""
-    severity: str = ""
-    warning: str = ""
-    recommendation: str = ""
-
-class DrugAnalysis(BaseModel):
-    safe_to_administer: bool = True
-    interactions: list[DrugInteraction] = Field(default_factory=list)
-    overall_recommendation: str = ""
-
-class DrugCheckResponse(BaseModel):
-    query_id: str
-    mode: str = "drug_check"
-    drug_analysis: Optional[DrugAnalysis] = None
-    raw_response: Optional[str] = None
-    timestamp: str
-    privacy: PrivacyMetadata
-
+    sanitization: Optional[SanitizationMetadata] = None
+    # Present when Gemini judged a map would help (e.g. nearest surgical care for
+    # a T1). Its presence is the frontend's signal to open the map sidebar.
+    map: Optional[MapPayload] = None
+    # DP layer stays parked — populated only if aggregate reporting ships later.
+    privacy: Optional[PrivacyMetadata] = None
 
 
 class MedevacRequest(BaseModel):
     triage_category: str = Field(
         ...,
-        description="NATO triage category (T1-IMMEDIATE, T2-DELAYED, T3-MINIMAL, T4-EXPECTANT)"
+        description="NATO triage category (T1-IMMEDIATE, T2-DELAYED, T3-MINIMAL, T4-EXPECTANT)",
     )
     grid_coordinate: str = Field(default="UNKNOWN", description="MGRS grid coordinate")
     call_sign: str = Field(default="NUCLEUS-01")
     radio_freq: str = Field(default="37.00 MHz FM")
     num_patients: int = Field(default=1, ge=1)
     is_litter: bool = Field(default=True, description="True=litter, False=ambulatory")
-    security: str = Field(default="N", description="N=No enemy, P=Possible, E=Enemy, X=Escort")
+    security: str = Field(
+        default="N", description="N=No enemy, P=Possible, E=Enemy, X=Escort"
+    )
     marking: str = Field(default="C", description="A=Panels, B=Pyro, C=Smoke, D=None")
-    nationality: str = Field(default="A", description="A=US Mil, B=US Civ, C=Non-US Mil, D=Non-US Civ, E=EPW")
-    cbrn: str = Field(default="N", description="N=None, C=Chemical, B=Biological, R=Radiological")
+    nationality: str = Field(
+        default="A", description="A=US Mil, B=US Civ, C=Non-US Mil, D=Non-US Civ, E=EPW"
+    )
+    cbrn: str = Field(
+        default="N", description="N=None, C=Chemical, B=Biological, R=Radiological"
+    )
+
 
 class MedevacNineLine(BaseModel):
     line_1: str
@@ -136,6 +140,7 @@ class MedevacNineLine(BaseModel):
     line_8: str
     line_9: str
 
+
 class MedevacResponse(BaseModel):
     request_id: str
     generated_at: str
@@ -145,29 +150,40 @@ class MedevacResponse(BaseModel):
     radio_format: str
 
 
-
-class CasualtyCreate(BaseModel):
-    patient_id: str = Field(..., description="Unique alphanumeric military designation or generic ID")
-    full_name: str = Field(..., description="Casualty name — will be fully encrypted on-device")
-    unit: str = Field(..., description="Casualty unit designation — will be fully encrypted on-device")
-    injury_type: str = Field(..., description="Description of the injury — will be fully encrypted")
-    triage_category: str = Field(..., description="Plaintext categorization for search/sorting (T1-T4)")
-
-class CasualtyResponse(BaseModel):
-    id: int
-    patient_id: str
-    full_name: str
-    unit: str
-    injury_type: str
-    triage_category: str
-    evacuation_role: str = "Role 1"
-    created_at: str
-
-    class Config:
-        from_attributes = True
+class MedevacGenerateRequest(BaseModel):
+    context: str = Field(
+        ...,
+        min_length=10,
+        description="Concentrated chat context retrieved client-side (top-K relevant messages)",
+    )
+    origin: Optional[str] = Field(
+        default=None,
+        description=(
+            "Operator's position (MGRS grid or 'lat, lon'). If omitted, the "
+            "casualty grid is extracted from the context. Stays on-device; used "
+            "to plot the casualty and the nearest evacuation facilities."
+        ),
+    )
 
 
-class CasualtyUpdate(BaseModel):
-    triage_category: Optional[str] = Field(None, description="Updated triage category")
-    evacuation_role: Optional[str] = Field(None, description="Role 1, Role 2, or Role 3")
+class ConsensusReport(BaseModel):
+    """PATE-style reliability vote across independent generations."""
 
+    samples: int
+    disputed_fields: list[str] = Field(default_factory=list)
+    agreement: float = 1.0
+
+
+class MedevacAIResponse(BaseModel):
+    request_id: str
+    generated_at: str
+    source: str = Field(description="'gemini_consensus' or 'offline_template'")
+    nine_line: MedevacNineLine
+    precedence: str
+    narrative: str = ""
+    radio_format: str
+    consensus: Optional[ConsensusReport] = None
+    sanitization: Optional[SanitizationMetadata] = None
+    # The casualty and nearest evacuation facilities, resolved on-device from the
+    # grid in the context. Its presence opens the map sidebar alongside the 9-line.
+    map: Optional[MapPayload] = None
