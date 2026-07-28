@@ -1,0 +1,621 @@
+/* Offline map panel — uses the Nucleus design tokens from index.css */
+
+.map-panel {
+  width: 380px;
+  flex-shrink: 0;
+  background-color: var(--bg-base);
+  border-left: 1px solid var(--border-default);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem;
+  overflow-y: auto;
+  color: var(--text-primary);
+  font-family: var(--font-body);
+}
+
+.map-panel-page {
+  width: 100%;
+  border-left: none;
+}
+
+/* Fullscreen: the whole panel fills the screen (map + note form + chips), so
+   "Add note here" works in fullscreen. The browser sizes the panel to the
+   viewport; we just let the map claim the freed space and keep the rest
+   scrollable underneath it. */
+.map-panel:fullscreen,
+.map-panel:-webkit-full-screen {
+  width: 100vw;
+  max-width: 100vw;
+  padding: 1.25rem;
+}
+.map-panel:fullscreen .map-canvas-wrap,
+.map-panel:-webkit-full-screen .map-canvas-wrap {
+  height: 65vh;
+}
+
+.map-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.map-panel-title {
+  display: block;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.map-panel-sub {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.map-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+/* --- canvas ------------------------------------------------------------- */
+
+.map-canvas-wrap {
+  position: relative;
+  height: 300px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid var(--border-default);
+  flex-shrink: 0;
+}
+
+.map-panel-page .map-canvas-wrap {
+  height: 460px;
+}
+
+.map-canvas {
+  width: 100%;
+  height: 100%;
+}
+
+.map-pin-hint {
+  position: absolute;
+  bottom: 0.6rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--accent);
+  color: var(--accent-text);
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.3rem 0.7rem;
+  border-radius: var(--radius-full);
+  pointer-events: none;
+}
+
+/* MapLibre chrome, retinted for the dark shell */
+.map-canvas .maplibregl-ctrl-group {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+}
+.map-canvas .maplibregl-ctrl-group button + button {
+  border-top: 1px solid var(--border-subtle);
+}
+.map-canvas .maplibregl-ctrl-group button span {
+  filter: invert(1) opacity(0.75);
+}
+.map-canvas .maplibregl-ctrl-scale {
+  background: rgba(19, 19, 20, 0.7);
+  border-color: var(--border-default);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+}
+.map-canvas .maplibregl-ctrl-attrib {
+  background: rgba(19, 19, 20, 0.75);
+}
+.map-canvas .maplibregl-ctrl-attrib a {
+  color: var(--text-muted);
+}
+
+/* --- markers ------------------------------------------------------------ */
+
+.map-marker {
+  width: 22px;
+  height: 22px;
+  border-radius: var(--radius-full);
+  display: grid;
+  place-items: center;
+  font-size: 0.68rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);
+}
+
+.map-marker-facility {
+  background: var(--pin-color, #9aa0a6);
+  color: var(--text-inverse);
+  border: 2px solid rgba(0, 0, 0, 0.45);
+}
+
+/* An operator pin is one person's word: dashed ring, never a solid fill. */
+.map-marker-facility.unverified {
+  background: transparent;
+  color: var(--pin-color, #9aa0a6);
+  border: 2px dashed var(--pin-color, #9aa0a6);
+  box-shadow: 0 0 0 2px rgba(19, 19, 20, 0.8);
+}
+
+.map-marker-origin {
+  width: 16px;
+  height: 16px;
+  background: var(--accent);
+  border: 3px solid var(--bg-deep);
+  box-shadow: 0 0 0 2px var(--accent), var(--shadow-glow);
+}
+
+.map-popup .maplibregl-popup-content,
+.maplibregl-popup-content {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  border-radius: var(--radius-sm);
+  padding: 0.6rem 0.75rem;
+  font-family: var(--font-body);
+}
+.maplibregl-popup-tip {
+  border-top-color: var(--bg-elevated) !important;
+  border-bottom-color: var(--bg-elevated) !important;
+}
+.map-popup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  font-size: 0.75rem;
+}
+.map-popup-kind,
+.map-popup-dist {
+  color: var(--text-secondary);
+}
+.map-popup-grid {
+  font-family: var(--font-mono);
+  color: var(--accent);
+}
+.map-popup-src {
+  margin-top: 0.25rem;
+  font-size: 0.68rem;
+  color: var(--success);
+}
+.map-popup-src.unverified {
+  color: var(--warning);
+  font-weight: 600;
+}
+.map-popup-note {
+  margin-top: 0.2rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* --- controls ----------------------------------------------------------- */
+
+.map-search {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.map-search-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.map-input,
+.map-select {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  color: var(--text-primary);
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 0.6rem;
+  font-size: 0.8rem;
+  font-family: var(--font-body);
+  width: 100%;
+}
+.map-input:focus,
+.map-select:focus {
+  outline: none;
+  border-color: var(--border-focus);
+}
+.map-input::placeholder {
+  color: var(--text-muted);
+}
+.map-input.narrow {
+  width: 64px;
+  font-family: var(--font-mono);
+}
+.map-select.grow {
+  flex: 1;
+}
+.map-unit {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.map-btn {
+  background: transparent;
+  border: 1px solid var(--border-default);
+  color: var(--text-primary);
+  border-radius: var(--radius-sm);
+  padding: 0.45rem 0.7rem;
+  font-size: 0.78rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.map-btn:hover:not(:disabled) {
+  background: var(--bg-hover);
+}
+.map-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.map-btn.primary {
+  background: var(--accent-solid);
+  border-color: var(--accent-solid);
+  color: var(--accent-text);
+}
+.map-btn.danger {
+  border-color: rgba(242, 139, 130, 0.4);
+  color: var(--danger);
+  margin-left: 0.35rem;
+}
+
+.map-icon-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 0.25rem 0.4rem;
+  border-radius: var(--radius-sm);
+}
+.map-icon-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+.map-icon-btn.tiny {
+  font-size: 0.75rem;
+  flex-shrink: 0;
+}
+
+/* --- banners ------------------------------------------------------------ */
+
+.map-banner {
+  font-size: 0.75rem;
+  line-height: 1.45;
+  padding: 0.55rem 0.7rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-default);
+}
+.map-banner code {
+  display: block;
+  margin-top: 0.35rem;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--accent);
+  word-break: break-all;
+}
+.map-banner.warn {
+  background: var(--t2-bg);
+  border-color: rgba(253, 226, 147, 0.25);
+  color: var(--t2-delayed);
+}
+.map-banner.error {
+  background: var(--t1-bg);
+  border-color: rgba(242, 139, 130, 0.3);
+  color: var(--t1-immediate);
+}
+.map-banner.info {
+  background: var(--accent-muted);
+  border-color: rgba(45, 212, 191, 0.3);
+  color: var(--accent);
+}
+
+/* --- results ------------------------------------------------------------ */
+
+.map-results {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.map-result {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.4rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 0.55rem 0.6rem;
+  transition: border-color 0.15s, background 0.15s;
+  width: 100%;
+}
+.map-result:hover {
+  background: var(--bg-hover);
+}
+.map-result.active {
+  border-color: var(--border-focus);
+}
+
+/* The row is a container; only this is the click target for selection. */
+.map-result-main {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  color: inherit;
+  font: inherit;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+}
+.map-result-main:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+.map-result-rank {
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radius-full);
+  display: grid;
+  place-items: center;
+  font-size: 0.66rem;
+  font-weight: 700;
+  color: var(--text-inverse);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.map-result-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.map-result-name {
+  font-size: 0.82rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.map-badge.unverified {
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 0.1rem 0.3rem;
+  border-radius: 3px;
+  background: var(--t2-bg);
+  color: var(--t2-delayed);
+  border: 1px solid rgba(253, 226, 147, 0.3);
+}
+
+.map-result-meta {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+}
+.map-result-grid {
+  font-size: 0.7rem;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+}
+.map-result-note {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  font-style: italic;
+  margin-top: 0.15rem;
+}
+
+/* --- route -------------------------------------------------------------- */
+
+.map-route-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  padding: 0.6rem 0.7rem;
+}
+.map-route-line {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+}
+.map-route-line span {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+}
+.map-route-caveat {
+  margin-top: 0.35rem;
+  font-size: 0.7rem;
+  line-height: 1.45;
+  color: var(--text-muted);
+}
+.map-route-caveat strong {
+  color: var(--warning);
+}
+
+/* --- operator pins ------------------------------------------------------ */
+
+.map-pins {
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.map-pins-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.map-pin-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  padding: 0.6rem;
+}
+.map-pin-coords {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--accent);
+}
+.map-pin-actions {
+  display: flex;
+  gap: 0.4rem;
+}
+.map-pin-privacy {
+  font-size: 0.66rem;
+  line-height: 1.45;
+  color: var(--text-muted);
+}
+
+.map-pin-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.78rem;
+}
+.map-pin-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+}
+.map-pin-name {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.map-pin-grid {
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  color: var(--text-muted);
+}
+
+/* Overview markers: facilities shown without a position (no ranking). Smaller
+   and quieter than a numbered search result, so they read as context. */
+.map-marker-facility.overview {
+  width: 13px;
+  height: 13px;
+  font-size: 0;
+  border-width: 2px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+}
+
+.map-overview-hint {
+  position: absolute;
+  bottom: 0.6rem;
+  left: 0.6rem;
+  background: rgba(19, 19, 20, 0.82);
+  border: 1px solid var(--border-default);
+  color: var(--text-secondary);
+  font-size: 0.68rem;
+  padding: 0.3rem 0.6rem;
+  border-radius: var(--radius-full);
+  pointer-events: none;
+}
+
+/* Mark-a-coordinate row: type a grid or lat/lon to drop a pin precisely. */
+.map-mark-row {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+}
+.map-mark-row .map-input {
+  flex: 1;
+}
+
+/* Map click context menu ("Add note here" / "Nearby facilities here"). */
+.map-context-popup .maplibregl-popup-content {
+  padding: 0.4rem;
+}
+.map-context-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 170px;
+}
+.map-context-coord {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  padding: 0.1rem 0.35rem 0.25rem;
+}
+.map-context-btn {
+  text-align: left;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-size: 0.8rem;
+  padding: 0.4rem 0.45rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+.map-context-btn:hover {
+  background: var(--bg-hover);
+}
+
+/* Nearby-category quick chips. */
+.map-quick-cats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+.map-chip {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  color: var(--text-secondary);
+  border-radius: var(--radius-full);
+  padding: 0.3rem 0.6rem;
+  font-size: 0.72rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.map-chip:hover:not(:disabled) {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+.map-chip.active {
+  background: var(--accent-muted);
+  border-color: var(--border-focus);
+  color: var(--accent);
+}
+.map-chip:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.map-pin-hint.subtle {
+  background: rgba(19, 19, 20, 0.75);
+  color: var(--text-secondary);
+  font-weight: 500;
+}
