@@ -11,29 +11,29 @@
 
 /* === Design Tokens === */
 :root {
-  /* Background layers */
-  --bg-deep: #0e0e0e;
-  --bg-base: #131314;
-  --bg-surface: #1e1f20;
-  --bg-elevated: #282a2c;
-  --bg-hover: #2d2f31;
+  /* Background layers — cool graphite with a hint of green, not neutral gray */
+  --bg-deep: #0a0e0d;
+  --bg-base: #0f1413;
+  --bg-surface: #19211f;
+  --bg-elevated: #222b28;
+  --bg-hover: #29332f;
 
   /* Borders */
   --border-subtle: rgba(255, 255, 255, 0.05);
   --border-default: rgba(255, 255, 255, 0.1);
-  --border-focus: rgba(138, 180, 248, 0.5);
+  --border-focus: rgba(45, 212, 191, 0.5);
 
   /* Text */
-  --text-primary: #e3e3e3;
-  --text-secondary: #9aa0a6;
-  --text-muted: #80868b;
-  --text-inverse: #131314;
+  --text-primary: #e6e9e8;
+  --text-secondary: #9aa5a1;
+  --text-muted: #7d8783;
+  --text-inverse: #0f1413;
 
-  /* Accent & Status */
-  --accent: #8ab4f8;
-  --accent-muted: rgba(138, 180, 248, 0.15);
-  --accent-solid: #8ab4f8;
-  --accent-text: #131314;
+  /* Accent & Status — bio-teal, the app's own signal color */
+  --accent: #2dd4bf;
+  --accent-muted: rgba(45, 212, 191, 0.14);
+  --accent-solid: #14b8a6;
+  --accent-text: #0a0e0d;
   
   --success: #81c995;
   --warning: #fde293;
@@ -65,7 +65,7 @@
   --radius-full: 9999px;
 
   /* Shadows */
-  --shadow-glow: 0 0 30px rgba(138, 180, 248, 0.15);
+  --shadow-glow: 0 0 30px rgba(45, 212, 191, 0.15);
 }
 
 /* === Base Styles === */
@@ -105,6 +105,7 @@ p { color: var(--text-secondary); }
 /* === Layout Shell === */
 .app-container {
   display: flex;
+  flex-direction: column;
   width: 100%;
   height: 100%;
 }

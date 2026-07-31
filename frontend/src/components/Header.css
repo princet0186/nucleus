@@ -1,0 +1,128 @@
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.5rem;
+  height: var(--header-height);
+  background: var(--bg-deep);
+  border-bottom: 1px solid var(--border-default);
+  flex-shrink: 0;
+}
+
+.header-brand {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.brand-logo-img {
+  width: 24px;
+  height: 24px;
+  color: var(--accent);
+  border-radius: var(--radius-sm);
+  object-fit: contain;
+}
+
+/* NUCLEUS wordmark: the middle letters (CLE) are the dense core — heavy,
+   accent-lit, tightly packed — while the outer letters spread away from it
+   like an electron shell. */
+.wordmark {
+  font-family: var(--font-mono);
+  font-size: 1.05rem;
+  display: inline-flex;
+  align-items: baseline;
+  user-select: none;
+}
+
+.wm-shell {
+  font-weight: 400;
+  color: var(--text-secondary);
+  letter-spacing: 0.3em;
+}
+
+.wm-shell:first-child {
+  margin-right: -0.3em; /* collapse the trailing tracking so NU hugs the core */
+}
+
+.wm-core {
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 0.02em;
+  padding: 0 0.08em;
+  text-shadow: 0 0 14px rgba(45, 212, 191, 0.5);
+}
+
+.brand-subtitle {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.privacy-link {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  border: 1px solid var(--border-default);
+  color: var(--text-secondary);
+  border-radius: var(--radius-full);
+  padding: 0.35rem 0.7rem;
+  font-size: 0.78rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.privacy-link:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  border-color: var(--border-focus);
+}
+
+.privacy-link.active {
+  background: var(--accent-muted);
+  color: var(--accent);
+  border-color: var(--border-focus);
+}
+
+.privacy-link-icon {
+  font-size: 0.85rem;
+}
+
+.header-footer {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+/* Vault lock — returns the whole app to the passphrase gate */
+.lock-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: transparent;
+  border: 1px solid var(--border-default);
+  color: var(--text-secondary);
+  border-radius: var(--radius-full);
+  padding: 0.35rem 0.7rem;
+  font-size: 0.78rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.lock-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  border-color: var(--border-focus);
+}
+.lock-icon {
+  font-size: 0.85rem;
+}

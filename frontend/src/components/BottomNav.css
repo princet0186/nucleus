@@ -1,0 +1,81 @@
+/* Bottom dock — the app's single navigator */
+
+.bottom-nav {
+  flex-shrink: 0;
+  display: flex;
+  justify-content: center;
+  padding: 0.55rem 1rem calc(0.65rem + env(safe-area-inset-bottom));
+  background: var(--bg-deep);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.bottom-nav-dock {
+  display: flex;
+  align-items: stretch;
+  gap: 0.25rem;
+  padding: 0.3rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-full);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+}
+
+.bottom-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0.95rem;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-full);
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  white-space: nowrap;
+}
+
+.bottom-nav-item:hover {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+
+.bottom-nav-code {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 0.14rem 0.4rem;
+  border-radius: var(--radius-sm);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-default);
+  color: var(--text-muted);
+  transition: all 0.18s ease;
+}
+
+.bottom-nav-item.active {
+  color: var(--accent);
+  background: var(--accent-muted);
+}
+
+.bottom-nav-item.active .bottom-nav-code {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-text);
+  box-shadow: 0 0 12px var(--accent-muted);
+}
+
+/* On narrow screens the labels drop and the codes carry the nav */
+@media (max-width: 860px) {
+  .bottom-nav-label {
+    display: none;
+  }
+  .bottom-nav-item {
+    padding: 0.45rem 0.6rem;
+  }
+  .bottom-nav-code {
+    font-size: 0.72rem;
+    padding: 0.25rem 0.55rem;
+  }
+}
