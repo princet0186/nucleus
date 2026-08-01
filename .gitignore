@@ -18,6 +18,17 @@ data/db/*.enc
 *.sqlite
 *.sqlite3
 
+# Offline map artifacts. All are rebuildable from OpenStreetMap via
+# tools/build_region.sh, and all are far too large to version:
+#   .mbtiles       vector tiles       (100s of MB to GBs per region)
+#   data/sources/  OSM extracts       (GBs)
+#   planetiler.jar the build tool     (~100 MB)
+#   fonts/         glyph PBFs
+*.mbtiles
+data/tiles/
+data/sources/
+tools/planetiler.jar
+
 # Node & Frontend Build
 frontend/node_modules/
 frontend/dist/

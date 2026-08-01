@@ -1,0 +1,111 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!--
+  Demo facility data for manual testing, centred on New Delhi (28.61, 77.21).
+
+  This is INVENTED data in OpenStreetMap's XML format, not a real extract. It
+  exists so the maps layer can be exercised end-to-end before anyone downloads
+  a multi-gigabyte region:
+
+      python tools/build_poi_index.py tools/demo_region.osm data/tiles/demo.poi.sqlite
+
+  That yields a region with a facility index and no basemap — a configuration
+  the app supports on purpose. For a real basemap, build a real region:
+
+      ./tools/build_region.sh monaco monaco
+
+  Covers every branch worth testing: each facility kind, a facility mapped as a
+  building way rather than a node, an unnamed emergency landing site, a
+  deliberately-out-of-range hospital, and a cafe that must never be indexed.
+-->
+<osm version="0.6" generator="nucleus-demo">
+
+  <!-- ============ medical ============ -->
+  <node id="1" lat="28.6139" lon="77.2090" version="1">
+    <tag k="amenity" v="hospital"/>
+    <tag k="name" v="Central District Hospital"/>
+    <tag k="emergency" v="yes"/>
+    <tag k="capacity:beds" v="220"/>
+    <tag k="phone" v="+91 11 2345 6789"/>
+  </node>
+  <node id="2" lat="28.6402" lon="77.2010" version="1">
+    <tag k="amenity" v="hospital"/>
+    <tag k="name" v="Northern Trauma Centre"/>
+    <tag k="emergency" v="yes"/>
+    <tag k="healthcare:speciality" v="trauma"/>
+  </node>
+  <node id="3" lat="28.6055" lon="77.2265" version="1">
+    <tag k="amenity" v="clinic"/>
+    <tag k="name" v="Yamuna Road Clinic"/>
+    <tag k="opening_hours" v="Mo-Sa 08:00-20:00"/>
+  </node>
+  <node id="4" lat="28.6188" lon="77.2158" version="1">
+    <tag k="amenity" v="pharmacy"/>
+    <tag k="name" v="Ridge Pharmacy"/>
+  </node>
+  <node id="5" lat="28.6098" lon="77.1965" version="1">
+    <tag k="amenity" v="doctors"/>
+    <tag k="name" v="Sector 7 Surgery"/>
+  </node>
+  <node id="6" lat="28.9100" lon="77.8900" version="1">
+    <tag k="amenity" v="hospital"/>
+    <tag k="name" v="Far Frontier Hospital"/>
+    <!-- ~75 km out: proves the radius filter actually excludes. -->
+  </node>
+
+  <!-- ============ evacuation ============ -->
+  <node id="10" lat="28.6172" lon="77.2042" version="1">
+    <tag k="aeroway" v="helipad"/>
+    <tag k="name" v="Rajpath Helipad"/>
+    <tag k="surface" v="concrete"/>
+  </node>
+  <node id="11" lat="28.6021" lon="77.2120" version="1">
+    <!-- Unnamed on purpose: an air-ambulance landing site with no name is still
+         a landing site, and the indexer must give it one. -->
+    <tag k="emergency" v="landing_site"/>
+  </node>
+  <node id="12" lat="28.5665" lon="77.1031" version="1">
+    <tag k="aeroway" v="aerodrome"/>
+    <tag k="name" v="Palam Airfield"/>
+  </node>
+
+  <!-- ============ support ============ -->
+  <node id="20" lat="28.6244" lon="77.2199" version="1">
+    <tag k="amenity" v="fire_station"/>
+    <tag k="name" v="Kashmere Gate Fire Station"/>
+  </node>
+  <node id="21" lat="28.6110" lon="77.2301" version="1">
+    <tag k="amenity" v="police"/>
+    <tag k="name" v="Daryaganj Police Station"/>
+  </node>
+  <node id="22" lat="28.6295" lon="77.2050" version="1">
+    <tag k="emergency" v="shelter"/>
+    <tag k="name" v="Civil Defence Shelter 4"/>
+  </node>
+  <node id="23" lat="28.6150" lon="77.2005" version="1">
+    <tag k="amenity" v="drinking_water"/>
+  </node>
+  <node id="24" lat="28.6330" lon="77.2255" version="1">
+    <tag k="amenity" v="fuel"/>
+    <tag k="name" v="Ring Road Fuel Depot"/>
+  </node>
+
+  <!-- ============ must NOT be indexed ============ -->
+  <node id="30" lat="28.6120" lon="77.2075" version="1">
+    <tag k="amenity" v="cafe"/>
+    <tag k="name" v="Not A Facility"/>
+  </node>
+
+  <!-- ============ a clinic mapped as a building way ============
+       The indexer must resolve this to the polygon's centroid, not skip it. -->
+  <node id="40" lat="28.6250" lon="77.2110" version="1"/>
+  <node id="41" lat="28.6250" lon="77.2130" version="1"/>
+  <node id="42" lat="28.6266" lon="77.2130" version="1"/>
+  <node id="43" lat="28.6266" lon="77.2110" version="1"/>
+  <way id="100" version="1">
+    <nd ref="40"/><nd ref="41"/><nd ref="42"/><nd ref="43"/><nd ref="40"/>
+    <tag k="amenity" v="clinic"/>
+    <tag k="name" v="Civil Lines Health Centre"/>
+    <tag k="healthcare" v="clinic"/>
+  </way>
+
+</osm>

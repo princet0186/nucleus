@@ -4,13 +4,12 @@ Welcome to Nucleus AI.
 
 This project is a supportive tool designed to assist combat medics in high-stress, offline(hybrid) environments.
 
-When medical team is working in the field, they often need to make quick decisions about medical care, triage, and drug interactions. Nucleus helps by providing an intelligent assistant that can analyze medical descriptions, suggest treatment protocols, and check for potentially dangerous drug interactions. Importantly, it is built to keep all patient and operational data secure and private, ensuring that sensitive information never leaves the device or gets exposed unnecessarily.
+When the medical team is working in the field, they often need to make quick decisions about medical care, triage, and casualty management. Nucleus helps by providing an intelligent assistant that can analyze medical descriptions, suggest treatment protocols, and manage casualty records in mass casualty events. Importantly, it is built to keep all patient and operational data secure and private, ensuring that sensitive information never leaves the device or gets exposed unnecessarily.
 
 ## Core Features
 
 ### 1. Medical Assistance Tools
 *   **Triage Assistant**: Medics can enter a description of a casualty's injuries. The system then helps classify the urgency of the injuries (using standard military categories like Immediate or Delayed) and suggests step-by-step treatment protocols.
-*   **Drug Interaction Checker**: Before administering medications, medics can use this tool to see if combining certain drugs (like pain relievers) might be unsafe for the patient's current condition.
 *   **MEDEVAC Request Generator**: A simple tool that automatically formats a standard 9-line medical evacuation request, so the medic can quickly radio for help.
 
 ### 2. Privacy and Data Security
@@ -28,11 +27,10 @@ Operating in the field means data security is a top priority. Nucleus uses a mul
 The system provides several straightforward endpoints to handle these tasks:
 *   `POST /nucleus/query` — For general questions.
 *   `POST /nucleus/triage` — To evaluate and classify injuries.
-*   `POST /nucleus/drug-check` — To check for drug interactions.
-*   `POST /nucleus/medevac` — To generate an evacuation request.
-*   `POST /nucleus/casualties` — To securely register a new patient.
-*   `GET /nucleus/casualties` — To view active patients.
-*   `DELETE /nucleus/casualties/{patient_id}` — To securely remove a patient record.
+*   `POST /nucleus/mascal` — To plan a mass-casualty response.
+*   `POST /nucleus/medevac` — To build a deterministic 9-line from form fields (offline).
+*   `POST /nucleus/medevac/generate` — To draft a consensus-voted 9-line from chat context.
+*   `GET /maps/...` — Offline map tiles, styles, and local facility search.
 
 ---
 
@@ -51,16 +49,24 @@ GEMINI_API_KEY="your_google_gemini_api_key"
 
 ### 3. Running the Project
 
-**Start the Backend Server:**
+**One command (backend + frontend together):**
+```bash
+./dev.sh
+```
+*Activates the venv, then starts the backend at `http://localhost:8800` and the frontend at `http://localhost:3000`. Ctrl-C stops both.*
+
+**Or start each part manually:**
+
+Backend server:
 ```bash
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 PYTHONPATH=. python3 backend/main.py
 ```
-*The server will start at `http://localhost:8000` (API documentation is at `/docs`).*
+*The server will start at `http://localhost:8800` (API documentation is at `/docs`).*
 
-**Start the Frontend Interface:**
+Frontend interface:
 ```bash
 cd frontend
 npm install
@@ -79,5 +85,5 @@ If you prefer to run the backend in an isolated container, you can use Docker:
 docker build -t nucleus-backend .
 
 # Run the container
-docker run -d -p 8000:8000 --env-file .env nucleus-backend
+docker run -d -p 8800:8800 --env-file .env nucleus-backend
 ```
